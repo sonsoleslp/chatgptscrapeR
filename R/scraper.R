@@ -41,7 +41,7 @@ scrape_chatgpt.data.frame <- function(x, column, ...) {
   stopifnot_(!missing(column), "Argument {.arg column} is missing. Specify which column contains the conversation URLs.")
 
   df <- dplyr::mutate(x, res = purrr::map(!!dplyr::sym(column), scrape_chatgpt_)) |>
-    tidyr::unnest(res)
+    tidyr::unnest(res) |> data.frame()
 
   return(df)
 }

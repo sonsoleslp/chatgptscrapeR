@@ -2,17 +2,19 @@
 output: github_document
 ---
 
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
   out.width = "100%",
   dpi = 300
 )
+options(width = 100)
 ```
+
 
 # `chatgptscrapeR` : An R package to scrape conversations from publicly shared ChatGPT links
 
@@ -32,53 +34,56 @@ devtools::install_github("sonsoleslp/chatgptscrapeR")
 ## Example
 
 Load the library
-```{r, warning = FALSE, results = FALSE}
+```{r, message = FALSE}
 library("chatgptscrapeR")
 library("dplyr")
 library("tidyr")
 ```
 
+
 Scrape one conversation
-```{r, results = F}
+```{r, results = FALSE}
 # URL of the ChatGPT conversation
 url1 <- "https://chatgpt.com/share/c7a912da-5dd3-4e46-9fd7-d777006068ff"
 url2 <- "https://chatgpt.com/share/c302f7d3-9d89-4d93-ab89-68c0bfd0b667"
 
 # Scrape the conversation
 conversation <- scrape_chatgpt(url1)
-select(conversation, order, message.content.parts)
+select(conversation, order, message.author.role, message.content.parts)
 ```
 
 
-
-```{r, echo = F}
-select(conversation, order, message.content.parts) |> gt::gt() |> 
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
+```{r, echo = FALSE}
+select(conversation, order, message.author.role, message.content.parts) |>
+  gt::gt() |>   
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> 
+  gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
 
 
 Scrape an array of conversations
-```{r, results = F}
+```{r, results = FALSE}
 urls <- c(url1, url2)
 
 # Scrape the conversations
 conversation <- scrape_chatgpt(urls)
-select(conversation, title, order, message.content.parts)
+select(conversation, order, title, message.author.role, message.content.parts)
 ```
 
 
-```{r, echo = F}
-select(conversation, title, order, message.content.parts) |>  
-  dplyr::rowwise() |>
-  gt::gt() |> 
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
+```{r, echo = FALSE}
+select(conversation, order, title, message.author.role, message.content.parts) |>
+  gt::gt() |>   
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> 
+  gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
 
 Scrape a dataframe containing conversation URLs
 
-```{r}
+
+```{r, results = FALSE}
 df <-  data.frame(user = c("User1", "User2"), 
                   age = c(15, 14),
                   gender = c("M", "F"),
@@ -88,13 +93,13 @@ df <-  data.frame(user = c("User1", "User2"),
 conversation <- scrape_chatgpt(df, column = "url") |> 
   filter(message.content.parts != "")
 
-select(conversation, user, title, message.content.parts) |> 
-  filter(user == "User1")
+select(conversation, order, user, title, message.author.role, message.content.parts) 
 ```
-
-```{r, echo = F}
-select(conversation, user, title, order, message.content.parts) |> filter(user == "User 1") |> 
-  gt::gt() |>
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
+ 
+```{r, echo = FALSE}
+select(conversation, order, user, title, message.author.role, message.content.parts) |>
+  gt::gt() |>   
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> 
+  gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
