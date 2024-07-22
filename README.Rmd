@@ -32,7 +32,7 @@ devtools::install_github("sonsoleslp/chatgptscrapeR")
 ## Example
 
 Load the library
-```{r, warning = FALSE}
+```{r, warning = FALSE, results = FALSE}
 library("chatgptscrapeR")
 library("dplyr")
 library("tidyr")
@@ -50,9 +50,10 @@ select(conversation, order, message.content.parts)
 ```
 
 
+
 ```{r, echo = F}
 select(conversation, order, message.content.parts) |> gt::gt() |> 
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---")
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
 
@@ -66,11 +67,12 @@ conversation <- scrape_chatgpt(urls)
 select(conversation, title, order, message.content.parts)
 ```
 
+
 ```{r, echo = F}
 select(conversation, title, order, message.content.parts) |>  
   dplyr::rowwise() |>
   gt::gt() |> 
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---")
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
 
@@ -83,12 +85,16 @@ df <-  data.frame(user = c("User1", "User2"),
                   url = urls)
 
 
-conversation <- scrape_chatgpt(df, column = "url") |> filter(message.content.parts != "")
-select(conversation, user, title, message.content.parts) |> filter(user == "User1") |> gt::gt()
+conversation <- scrape_chatgpt(df, column = "url") |> 
+  filter(message.content.parts != "")
+
+select(conversation, user, title, message.content.parts) |> 
+  filter(user == "User1")
 ```
 
 ```{r, echo = F}
-select(conversation, user, title, order, message.content.parts) |> filter(user == "User 1") |> gt::gt() |>
-  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---")
+select(conversation, user, title, order, message.content.parts) |> filter(user == "User 1") |> 
+  gt::gt() |>
+  gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
 ```
 
