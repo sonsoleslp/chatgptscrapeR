@@ -106,7 +106,6 @@ scrape_chatgpt_ <- function(x) {
       next
     }
 
-
     messages <- json_parsed$props$pageProps$serverResponse$data$linear_conversation |>
       dplyr::rowwise() |>
       dplyr::mutate_at(dplyr::vars(children,
@@ -115,7 +114,8 @@ scrape_chatgpt_ <- function(x) {
                                    message.metadata.finish_details.stop_tokens),
                        \(x) paste(x, collapse = "\n")) |>
       dplyr::ungroup() |>
-      dplyr::mutate(order = seq_along(message.content.parts),
+      dplyr::mutate(order = cumsum(!is.na(message.create_time))) |>
+      dplyr::mutate(order = ifelse(is.na(message.create_time), NA, order),
                     conversationId = json_parsed$props$pageProps$sharedConversationId,
                     title = json_parsed$props$pageProps$serverResponse$data$title,
                     create_time = json_parsed$props$pageProps$serverResponse$data$create_time,

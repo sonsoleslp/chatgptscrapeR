@@ -81,19 +81,13 @@ select(conversation, order, title, message.author.role, message.content.parts) |
 
 
 Scrape a dataframe containing conversation URLs
-
-
 ```{r, results = FALSE}
 df <-  data.frame(user = c("User1", "User2"), 
                   age = c(15, 14),
                   gender = c("M", "F"),
                   url = urls)
 
-
-conversation <- scrape_chatgpt(df, column = "url") |> 
-  filter(message.content.parts != "")
-
-select(conversation, order, user, title, message.author.role, message.content.parts) 
+conversation <- scrape_chatgpt(df, column = "url") |> filter(!is.na(order))
 ```
  
 ```{r, echo = FALSE}
@@ -101,5 +95,13 @@ select(conversation, order, user, title, message.author.role, message.content.pa
   gt::gt() |>   
   gt::sub_missing(columns = gt::everything(), rows = gt::everything(), missing_text = "---") |> 
   gt::tab_options(table.font.size = 8) |> gt::as_raw_html()
+```
+
+```{r}
+text_data <- conversation |> 
+  group_by(message.author.role) |> 
+  get_keywords(token ="words", top = 5, remove_stopwords = T)
+
+conversation |> get_keywords(token ="words", top = 5, remove_stopwords = T)
 ```
 

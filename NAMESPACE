@@ -3,4 +3,8 @@
 S3method(scrape_chatgpt,character)
 S3method(scrape_chatgpt,data.frame)
 S3method(scrape_chatgpt,default)
+export(get_keywords)
+export(plot_sentiments)
 export(scrape_chatgpt)
+export(sentiments)
+export(wordcloud)
