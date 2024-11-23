@@ -86,7 +86,6 @@ df <-  data.frame(user = c("User1", "User2"),
                   age = c(15, 14),
                   gender = c("M", "F"),
                   url = urls)
-
 conversation <- scrape_chatgpt(df, column = "url") |> filter(!is.na(order))
 ```
  
