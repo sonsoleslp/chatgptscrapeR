@@ -73,19 +73,18 @@ scrape_chatgpt_ <- function(x) {
     webpage <- xml2::read_html(content)
 
     # Extract the JSON data from the <script> tag
-    json_data <- xml2::xml_find_first(webpage, "//script[@id='__NEXT_DATA__']")
+    json_data <- xml2::xml_find_all(webpage, "//script")
     if (is.null(json_data)) {
       warning_(paste("No JSON data found in the script tag at URL:", i))
       failed <- c(failed, i)
       next
     }
-    json_text <- xml2::xml_text(json_data)
-
-    # Parse the JSON data
+    json_text <- gsub(pattern = "window.__remixContext = ","", xml2::xml_contents( json_data[3]))
+    json_text <- gsub(pattern = ";$", "", json_text)
     json_parsed <- tryCatch({
-      jsonlite::fromJSON(json_text, flatten = TRUE)
+      jsonlite::fromJSON(json_text, flatten = TRUE)$state$loaderData[[2]]#$serverResponse$data
     }, error = function(e) {
-      warning_(paste("Failed to parse JSON data at URL:", i))
+      print(paste("Failed to parse JSON data at URL:", i))
       failed <- c(failed, i)
       return(NULL)
     })
@@ -97,16 +96,16 @@ scrape_chatgpt_ <- function(x) {
     }
 
     # Navigate through the JSON structure to get the conversation data
-    if (!"props" %in% names(json_parsed) || !"pageProps" %in% names(json_parsed$props) ||
-        !"serverResponse" %in% names(json_parsed$props$pageProps) ||
-        !"data" %in% names(json_parsed$props$pageProps$serverResponse) ||
-        !"linear_conversation" %in% names(json_parsed$props$pageProps$serverResponse$data)) {
+    if (!("chatPageProps" %in% names(json_parsed)) |
+        !("serverResponse" %in% names(json_parsed)) |
+        !("data" %in% names(json_parsed$serverResponse)) |
+        !("linear_conversation" %in% names(json_parsed$serverResponse$data))) {
       warning_(paste("Invalid JSON structure at URL:", i))
       failed <- c(failed, i)
       next
     }
 
-    messages <- json_parsed$props$pageProps$serverResponse$data$linear_conversation |>
+    messages <- json_parsed$serverResponse$data$linear_conversation |>
       dplyr::rowwise() |>
       dplyr::mutate_at(dplyr::vars(children,
                                    message.content.parts,
@@ -116,10 +115,10 @@ scrape_chatgpt_ <- function(x) {
       dplyr::ungroup() |>
       dplyr::mutate(order = cumsum(!is.na(message.create_time))) |>
       dplyr::mutate(order = ifelse(is.na(message.create_time), NA, order),
-                    conversationId = json_parsed$props$pageProps$sharedConversationId,
-                    title = json_parsed$props$pageProps$serverResponse$data$title,
-                    create_time = json_parsed$props$pageProps$serverResponse$data$create_time,
-                    update_time = json_parsed$props$pageProps$serverResponse$data$update_time
+                    conversationId = json_parsed$sharedConversationId,
+                    title = json_parsed$serverResponse$data$title,
+                    create_time = json_parsed$serverResponse$data$create_time,
+                    update_time = json_parsed$serverResponse$data$update_time
       )
     messages_df <- dplyr::bind_rows(messages_df, messages)
   }

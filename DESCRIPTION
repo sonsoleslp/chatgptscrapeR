@@ -1,7 +1,7 @@
 Package: chatgptscrapeR
 Type: Package
 Title: An R package to scrape conversations from publicly shared ChatGPT links
-Version: 0.1.0
+Version: 1.0.0
 Author: sonsoleslp
 Maintainer: sonsoleslp, <sonsoles.lopez@uef.fi>
 Description: TBD
