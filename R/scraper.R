@@ -59,7 +59,7 @@ scrape_chatgpt_ <- function(x) {
   failed <- c()
   for(i in c(x)) {
     # Get the HTML content from the URL
-    response <- httr::GET(i)
+    response <- httr::GET(i, httr::timeout(10))
 
     if (response$status_code != 200) {
       warning_(paste("Failed to retrieve data from URL:", i))
