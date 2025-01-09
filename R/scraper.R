@@ -80,7 +80,8 @@ scrape_chatgpt_ <- function(x) {
       next
     }
     json_text <- gsub(pattern = "window.__remixContext = ","", xml2::xml_contents( json_data[3]))
-    json_text <- gsub(pattern = ";$", "", json_text)
+    json_text <- gsub(pattern = ";__remixContext.*$", "", json_text)
+
     json_parsed <- tryCatch({
       jsonlite::fromJSON(json_text, flatten = TRUE)$state$loaderData[[2]]#$serverResponse$data
     }, error = function(e) {
