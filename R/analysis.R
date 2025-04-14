@@ -11,7 +11,7 @@ get_keywords <- function(df, col = "message.content.parts", remove_stopwords = T
   text_data <- dplyr::count(text_data, word, sort = TRUE)
 
   if (!is.null(top)) {
-    text_data <- text_data |> filter(row_number() <= top)
+    text_data <- text_data |> dplyr::filter(row_number() <= top)
   }
 
   text_data

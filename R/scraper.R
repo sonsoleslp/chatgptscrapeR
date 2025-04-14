@@ -35,7 +35,20 @@ scrape_chatgpt.character <- function(x, ...) {
 
 
 #' @exportS3Method
+#' Scrape ChatGPT Conversations
+#'
+#' A generic function to scrape ChatGPT conversations from a provided URL or data frame.
+#'
+#' @export
 #' @rdname scrape_chatgpt
+#' @param x A URL or data frame containing URLs to scrape.
+#' @param ... Additional arguments passed to specific methods.
+#' @return A `data.frame` with the scraped conversation data.
+#' @examples
+#' url <- "https://chatgpt.com/share/c7a912da-5dd3-4e46-9fd7-d777006068ff"
+#' df <- data.frame(names = c("a","b"), urls = c(url, url))
+#' scrape_chatgpt(df)
+#'
 scrape_chatgpt.data.frame <- function(x, column, ...) {
   stopifnot_(!missing(x), "Argument {.arg x} is missing.")
   stopifnot_(!missing(column), "Argument {.arg column} is missing. Specify which column contains the conversation URLs.")
@@ -57,33 +70,26 @@ scrape_chatgpt.data.frame <- function(x, column, ...) {
 scrape_chatgpt_ <- function(x) {
   messages_df <- data.frame()
   failed <- c()
+  b <- chromote::ChromoteSession$new()
+  on.exit(b$close(), add = TRUE)
   for(i in c(x)) {
-    # Get the HTML content from the URL
-    response <- httr::GET(i, httr::timeout(10))
-
-    if (response$status_code != 200) {
-      warning_(paste("Failed to retrieve data from URL:", i))
+  
+    result <- tryCatch({
+      b$Page$navigate(i)
+      b$Page$loadEventFired(timeout_ = 100)  # Wait until the page is fully loaded
+      b$Runtime$evaluate("JSON.stringify(window.__reactRouterDataRouter.state)")
+    }, error = function(e) {
+      warning_(paste("Failed to parse JSON data at URL:", i))
       failed <- c(failed, i)
+      return (NULL)
+    })
+    
+    if (is.null(result)) {
       next
     }
-
-    content <- httr::content(response, as = "text")
-
-    # Parse the HTML content
-    webpage <- xml2::read_html(content)
-
-    # Extract the JSON data from the <script> tag
-    json_data <- xml2::xml_find_all(webpage, "//script")
-    if (is.null(json_data)) {
-      warning_(paste("No JSON data found in the script tag at URL:", i))
-      failed <- c(failed, i)
-      next
-    }
-    json_text <- gsub(pattern = "window.__remixContext = ","", xml2::xml_contents( json_data[3]))
-    json_text <- gsub(pattern = ";__remixContext.*$", "", json_text)
-
+    
     json_parsed <- tryCatch({
-      jsonlite::fromJSON(json_text, flatten = TRUE)$state$loaderData[[2]]#$serverResponse$data
+      jsonlite::fromJSON(result$result$value, flatten = TRUE)$loaderData[[2]]
     }, error = function(e) {
       print(paste("Failed to parse JSON data at URL:", i))
       failed <- c(failed, i)
@@ -91,8 +97,6 @@ scrape_chatgpt_ <- function(x) {
     })
 
     if (is.null(json_parsed)) {
-      warning_(paste("Failed to parse JSON data at URL:", i))
-      failed <- c(failed, i)
       next
     }
 
@@ -127,5 +131,6 @@ scrape_chatgpt_ <- function(x) {
   if(length(failed) > 0) {
     warning_(paste("\nThe following URLs failed to parse: ", paste(failed, collapse = ", ")))
   }
+  b$close()
   return(messages_df)
 }
