@@ -70,7 +70,19 @@ scrape_chatgpt.data.frame <- function(x, column, ...) {
 scrape_chatgpt_ <- function(x) {
   messages_df <- data.frame()
   failed <- c()
-  b <- chromote::ChromoteSession$new()
+  b <- NULL
+  if (identical(Sys.getenv("R_CONFIG_ACTIVE"), "shinyapps")) {
+       b <- chromote::Chromote$new(chromote::Chrome$new(
+        args = c("--disable-gpu", 
+                 "--no-sandbox", 
+                 "--disable-dev-shm-usage", # required bc the target easily crashes
+                 c("--force-color-profile", "srgb"))
+      ))
+  } else {
+    b <- chromote::ChromoteSession$new()
+  }
+  
+  
   on.exit(b$close(), add = TRUE)
   for(i in c(x)) {
   
