@@ -70,22 +70,11 @@ scrape_chatgpt.data.frame <- function(x, column, ...) {
 scrape_chatgpt_ <- function(x) {
   messages_df <- data.frame()
   failed <- c()
-  b <- NULL
-  if (identical(Sys.getenv("R_CONFIG_ACTIVE"), "shinyapps")) {
-       b <- chromote::Chromote$new(chromote::Chrome$new(
-        args = c("--disable-gpu", 
-                 "--no-sandbox", 
-                 "--disable-dev-shm-usage", # required bc the target easily crashes
-                 c("--force-color-profile", "srgb"))
-      ))
-  } else {
-    b <- chromote::ChromoteSession$new()
-  }
-  
-  
+  chrome_path <- chromote::find_chrome()
+  b <- chromote::Chrome$new(path = chrome_path,
+                            args = c("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"))
   on.exit(b$close(), add = TRUE)
   for(i in c(x)) {
-  
     result <- tryCatch({
       b$Page$navigate(i)
       b$Page$loadEventFired(timeout_ = 100)  # Wait until the page is fully loaded
