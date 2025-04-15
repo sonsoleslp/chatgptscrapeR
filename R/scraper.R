@@ -71,8 +71,21 @@ scrape_chatgpt_ <- function(x) {
   messages_df <- data.frame()
   failed <- c()
   chrome_path <- chromote::find_chrome()
-  b <- chromote::Chrome$new(path = chrome_path,
-                            args = c("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"))
+  chrome <- chromote::Chromote$new(chromote::Chrome$new(
+    path = chrome_path,
+    args = c(
+      "--disable-gpu",
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--force-color-profile=srgb"
+    )
+  ))
+  chromote::set_default_chromote_object(chrome)
+  
+  # Create a session tied to that Chrome process
+  b <- chromote::ChromoteSession$new()
+  
+  
   on.exit(b$close(), add = TRUE)
   for(i in c(x)) {
     result <- tryCatch({
