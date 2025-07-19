@@ -1,10 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `chatgptscrapeR` : An R package to scrape conversations from publicly shared ChatGPT links
+# `chatgptscrapeR` : An R package to scrape conversations from publicly shared ChatGPT links <img src="logo.png" height="152" align="right"/>
 
-<!-- badges: start -->
-<!-- badges: end -->
+
+
+
+![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
+![R](https://img.shields.io/badge/r-%23276DC3.svg?style=for-the-badge&logo=r&logoColor=white)
 
 ## Installation
 
